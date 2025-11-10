@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liba Gallery</title>
+<style>
+:root {
+	--bg-light: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+	--bg-dark: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+	--card-light: linear-gradient(145deg, #ffffff, #e6e6e6);
+	--card-dark: linear-gradient(145deg, #2a4858, #1a3544);
+	--primary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+	--secondary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+	--accent: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+	--shadow-light: rgba(0, 0, 0, 0.1);
+	--shadow-dark: rgba(0, 0, 0, 0.5);
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	background: var(--bg-light);
+	min-height: 100vh;
+	padding: 25px;
+	transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.dark {
+	background: var(--bg-dark);
+}
+
+/* Header */
+.header {
+	position: sticky;
+	top: 0;
+	z-index: 999;
+	display: flex;
+	gap: 15px;
+	margin-bottom: 35px;
+	padding: 20px 28px;
+	background: rgba(255, 255, 255, 0.25);
+	backdrop-filter: blur(25px) saturate(200%);
+	-webkit-backdrop-filter: blur(25px) saturate(200%);
+	border-radius: 60px;
+	box-shadow: 0 20px 60px var(--shadow-light), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+	border: 2px solid rgba(255, 255, 255, 0.4);
+	animation: slideDown 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.dark .header {
+	background: rgba(42, 72, 88, 0.4);
+	border-color: rgba(255, 255, 255, 0.1);
+	box-shadow: 0 20px 60px var(--shadow-dark), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.search {
+	flex: 1;
+	padding: 15px 26px;
+	border: none;
+	border-radius: 50px;
+	background: rgba(255, 255, 255, 0.9);
+	font-size: 16px;
+	outline: none;
+	box-shadow: 0 8px 25px var(--shadow-light);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search:focus {
+	transform: translateY(-3px);
+	box-shadow: 0 12px 35px var(--shadow-light);
+}
+
+body.dark .search {
+	background: rgba(255, 255, 255, 0.15);
+	color: #fff;
+}
+
+.search::placeholder {
+	color: #999;
+}
+
+body.dark .search::placeholder {
+	color: #ccc;
+}
+
+.theme-btn {
+	width: 55px;
+	height: 55px;
+	border: none;
+	border-radius: 50%;
+	background: var(--accent);
+	color: #fff;
+	font-size: 26px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 8px 25px rgba(250, 112, 154, 0.4);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-btn:hover {
+	transform: scale(1.2) rotate(180deg);
+	box-shadow: 0 12px 35px rgba(250, 112, 154, 0.6);
+}
+
+body.dark .theme-btn {
+	background: var(--secondary);
+	box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}
+
+/* Gallery */
+.gallery {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 25px;
+	animation: fadeIn 0.9s ease;
+}
+
+.card {
+	position: relative;
+	border-radius: 24px;
+	overflow: hidden;
+	background: var(--card-light);
+	box-shadow: 0 15px 45px var(--shadow-light);
+	transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+	cursor: pointer;
+	aspect-ratio: 4/3;
+}
+
+body.dark .card {
+	background: var(--card-dark);
+	box-shadow: 0 15px 45px var(--shadow-dark);
+}
+
+.card:hover {
+	transform: translateY(-18px) scale(1.05) rotate(-2deg);
+	box-shadow: 0 30px 70px var(--shadow-light);
+	z-index: 20;
+}
+
+body.dark .card:hover {
+	box-shadow: 0 30px 70px var(--shadow-dark);
+}
+
+.card img, .card video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: all 0.5s ease;
+}
+
+.card:hover img, .card:hover video {
+	filter: brightness(0.65) saturate(1.3);
+	transform: scale(1.15);
+}
+
+.download-btn {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+	background: var(--primary);
+	color: #fff;
+	padding: 18px 40px;
+	border-radius: 50px;
+	text-decoration: none;
+	font-weight: 700;
+	font-size: 18px;
+	opacity: 0;
+	transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	box-shadow: 0 12px 35px rgba(240, 147, 251, 0.5);
+	z-index: 5;
+	white-space: nowrap;
+}
+
+.card:hover .download-btn {
+	transform: translate(-50%, -50%) scale(1) rotate(0deg);
+	opacity: 1;
+}
+
+.download-btn:hover {
+	background: var(--secondary);
+	transform: translate(-50%, -50%) scale(1.2) rotate(0deg) !important;
+	box-shadow: 0 15px 45px rgba(79, 172, 254, 0.6);
+}
+
+.empty {
+	text-align: center;
+	padding: 120px 30px;
+	color: rgba(0, 0, 0, 0.5);
+	font-size: 30px;
+	font-weight: 700;
+	display: none;
+}
+
+body.dark .empty {
+	color: rgba(255, 255, 255, 0.6);
+}
+
+/* Modal */
+.modal {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.95);
+	z-index: 99999;
+	opacity: 0;
+	transition: opacity 0.5s ease;
+	align-items: center;
+	justify-content: center;
+}
+
+.modal.show {
+	display: flex;
+	opacity: 1;
+}
+
+.modal-content {
+	max-width: 90vw;
+	max-height: 90vh;
+	animation: zoomIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.modal-content img, .modal-content video {
+	max-width: 90vw;
+	max-height: 90vh;
+	border-radius: 20px;
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+}
+
+.close-btn {
+	position: fixed;
+	top: 30px;
+	right: 30px;
+	width: 65px;
+	height: 65px;
+	border: 3px solid rgba(255, 255, 255, 0.5);
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(20px);
+	color: #fff;
+	font-size: 42px;
+	border-radius: 50%;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	z-index: 100001;
+}
+
+.close-btn:hover {
+	background: rgba(255, 255, 255, 0.25);
+	transform: rotate(90deg) scale(1.15);
+	border-color: #fff;
+}
+
+.nav-arrow {
+	position: fixed;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 65px;
+	height: 65px;
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(20px);
+	border: 3px solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	color: #fff;
+	font-size: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	z-index: 100001;
+	user-select: none;
+}
+
+.nav-arrow:hover {
+	background: rgba(255, 255, 255, 0.25);
+	border-color: rgba(255, 255, 255, 0.7);
+	transform: translateY(-50%) scale(1.2);
+}
+
+.nav-arrow.left {
+	left: 45px;
+}
+
+.nav-arrow.right {
+	right: 45px;
+}
+
+.nav-arrow.disabled {
+	opacity: 0.2;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.modal-download {
+	position: fixed;
+	bottom: 45px;
+	right: 45px;
+	background: var(--primary);
+	color: #fff;
+	padding: 20px 35px;
+	border-radius: 50px;
+	text-decoration: none;
+	font-weight: 700;
+	font-size: 19px;
+	box-shadow: 0 18px 45px rgba(240, 147, 251, 0.5);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	z-index: 100001;
+}
+
+.modal-download:hover {
+	background: var(--secondary);
+	transform: scale(1.15);
+	box-shadow: 0 22px 55px rgba(79, 172, 254, 0.6);
+}
+
+/* Animations */
+@keyframes slideDown {
+	from { opacity: 0; transform: translateY(-60px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+	from { opacity: 0; transform: scale(0.7); }
+	to { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+	.gallery { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+	.gallery { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+	body { padding: 18px; }
+	.header { padding: 16px 22px; }
+	.search { font-size: 15px; padding: 13px 22px; }
+	.theme-btn { width: 48px; height: 48px; font-size: 22px; }
+	.nav-arrow, .close-btn { width: 55px; height: 55px; font-size: 28px; }
+	.nav-arrow.left { left: 25px; }
+	.nav-arrow.right { right: 25px; }
+	.modal-download { bottom: 25px; right: 25px; padding: 16px 28px; font-size: 17px; }
+}
+
+@media (max-width: 480px) {
+	.gallery { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+	<input type="search" class="search" placeholder="🔍 Search gallery..." id="search">
+	<button class="theme-btn" id="theme">☀️</button>
+</div>
+
+<div class="gallery" id="gallery"></div>
+<div class="empty" id="empty">✨ No results found</div>
+
+<div class="modal" id="modal">
+	<div class="close-btn" id="close">&times;</div>
+	<div class="nav-arrow left" id="prev">‹</div>
+	<div class="modal-content" id="content"></div>
+	<div class="nav-arrow right" id="next">›</div>
+	<a href="#" class="modal-download" id="download">⬇ Download</a>
+</div>
+
+<script>
+const files = [
+	'iqra same glasses.jpg','glasses.jpg','iba story (2).jpg','iba story (3).jpg','iba story (4).jpg',
+	'iba story (5).jpg','iba story.jpg','mehendi time.jpg','pari.jpg','profile 2.jpg','profile.jpg',
+	'proposing liba.jpg','sana (2).jpg','sana.jpg','Screenshot_2024-12-27-02-31-33-843_com.instagram.android.jpg',
+	'Screenshot_2024-12-27-02-31-45-965_com.instagram.android.jpg','She sent as a snap.jpg','shehzadi.jpg',
+	'Snapchat-194936332.jpg','theatre.jpg','1.mp4','2.mp4','3.mp4','4.mp4','5.mp4','6.mp4','7.mp4',
+	'8.mp4','9.mp4','10.mp4','11.mp4','12.mp4','13.mp4','14.mp4','15.mp4','16.mp4','Me to thak gayi.mp4',
+	'Second saree.mp4','Skin care.mp4','masjid snap.mp4','nawab dhaba.mp4','playing snap.mp4','reel (3).mp4',
+	'reel.mp4','sana (2).mp4','sana (3).mp4','sana (4).mp4','sana.mp4','ummatia friends.mp4','ummatia.mp4'
+];
+
+const media = files.map(f => ({
+	src: f,
+	type: f.endsWith('.mp4') ? 'video' : 'image',
+	name: f.replace(/\..+$/, '')
+}));
+
+const el = {
+	gallery: document.getElementById('gallery'),
+	empty: document.getElementById('empty'),
+	search: document.getElementById('search'),
+	theme: document.getElementById('theme'),
+	modal: document.getElementById('modal'),
+	content: document.getElementById('content'),
+	close: document.getElementById('close'),
+	prev: document.getElementById('prev'),
+	next: document.getElementById('next'),
+	download: document.getElementById('download')
+};
+
+let list = media;
+let idx = 0;
+
+function render(items = media) {
+	list = items;
+	if (!items.length) {
+		el.gallery.innerHTML = '';
+		el.empty.style.display = 'block';
+		return;
+	}
+	el.empty.style.display = 'none';
+	el.gallery.innerHTML = items.map((m, i) => `
+		<div class="card" data-idx="${i}">
+			${m.type === 'video' ? `<video src="${m.src}"></video>` : `<img src="${m.src}">`}
+			<a href="${m.src}" download class="download-btn">⬇ GET</a>
+		</div>
+	`).join('');
+	
+	document.querySelectorAll('.card').forEach(c => {
+		c.onclick = e => {
+			if (!e.target.classList.contains('download-btn')) {
+				openModal(parseInt(c.dataset.idx));
+			}
+		};
+		c.querySelector('.download-btn')?.addEventListener('click', e => e.stopPropagation());
+	});
+}
+
+function openModal(i) {
+	idx = i;
+	const m = list[idx];
+	el.content.innerHTML = m.type === 'video' 
+		? `<video src="${m.src}" controls autoplay></video>`
+		: `<img src="${m.src}">`;
+	el.download.href = m.src;
+	el.download.download = m.src;
+	updateNav();
+	el.modal.classList.add('show');
+	document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+	el.modal.classList.remove('show');
+	document.body.style.overflow = 'auto';
+	setTimeout(() => el.content.innerHTML = '', 500);
+}
+
+function updateNav() {
+	el.prev.classList.toggle('disabled', idx === 0);
+	el.next.classList.toggle('disabled', idx === list.length - 1);
+}
+
+function showPrev() {
+	if (idx > 0) openModal(idx - 1);
+}
+
+function showNext() {
+	if (idx < list.length - 1) openModal(idx + 1);
+}
+
+el.close.onclick = closeModal;
+el.modal.onclick = e => { if (e.target === el.modal) closeModal(); };
+el.prev.onclick = e => { e.stopPropagation(); showPrev(); };
+el.next.onclick = e => { e.stopPropagation(); showNext(); };
+
+el.theme.onclick = () => {
+	document.body.classList.toggle('dark');
+	const dark = document.body.classList.contains('dark');
+	el.theme.textContent = dark ? '🌙' : '☀️';
+	localStorage.theme = dark ? 'dark' : 'light';
+};
+
+el.search.oninput = e => {
+	const q = e.target.value.toLowerCase().trim();
+	render(q ? media.filter(m => m.name.toLowerCase().includes(q)) : media);
+};
+
+document.onkeydown = e => {
+	if (e.key === 'Escape') closeModal();
+	if (el.modal.classList.contains('show')) {
+		if (e.key === 'ArrowLeft') showPrev();
+		if (e.key === 'ArrowRight') showNext();
+		if (e.key === ' ' || e.code === 'Space') {
+			e.preventDefault();
+			const v = el.content.querySelector('video');
+			if (v) v.paused ? v.play() : v.pause();
+		}
+		if (e.key === 'd' || e.key === 'D') {
+			e.preventDefault();
+			el.download.click();
+		}
+	}
+};
+
+if (localStorage.theme === 'dark') {
+	document.body.classList.add('dark');
+	el.theme.textContent = '🌙';
+}
+
+render();
+</script>
+</body>
+</html>
